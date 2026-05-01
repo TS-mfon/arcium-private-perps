@@ -1,0 +1,13 @@
+:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #111316; color: #f7f4ec; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #111316, #182323 52%, #2a1d22); }
+.shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0; }
+.hero { min-height: 58vh; display: grid; align-content: center; border-bottom: 1px solid rgba(247,244,236,.16); }
+.eyebrow { color: #78d7f5; text-transform: uppercase; font-size: 13px; letter-spacing: .08em; }
+h1 { max-width: 900px; margin: 0; font-size: clamp(44px, 8vw, 88px); line-height: .94; letter-spacing: 0; }
+.lede { max-width: 760px; color: #d9d5cb; font-size: 20px; line-height: 1.5; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
+article { border: 1px solid rgba(247,244,236,.16); background: rgba(255,255,255,.04); border-radius: 8px; padding: 20px; }
+h2 { margin: 0 0 10px; }
+p { color: #d9d5cb; line-height: 1.55; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 46px; } }
