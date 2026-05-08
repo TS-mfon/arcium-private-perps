@@ -3,20 +3,160 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive private perpetuals frontend for the Arcium Private Perps Solana program."
+    />
     <title>Arcium Private Perps</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="/app/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/app/styles.css" />
+    <script src="/app/app.js" defer></script>
   </head>
   <body>
-    <main class="shell">
-      <section class="hero">
-        <p class="eyebrow">Arcium RTG Developer Submission</p>
-        <h1>Private perpetual positions on Solana</h1>
-        <p class="lede">Position size, leverage, margin, liquidation threshold, and unrealized PnL compute privately. Only verified settlement outputs reach the public program.</p>
+    <main class="app-shell">
+      <header class="topbar" aria-label="Application header">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">AP</span>
+          <span>
+            <span class="brand-title">Arcium Private Perps</span>
+            <span class="brand-subtitle">Encrypted risk console</span>
+          </span>
+        </a>
+        <nav class="top-actions" aria-label="Quick links">
+          <a href="#trade">Trade</a>
+          <a href="#verified-state">Verified state</a>
+        </nav>
+      </header>
+
+      <section class="workspace" id="trade">
+        <div class="trade-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Private order ticket</p>
+              <h1>Model an encrypted perpetual position</h1>
+            </div>
+            <span class="network-pill" id="networkPill">Local metadata pending</span>
+          </div>
+
+          <form class="ticket" id="positionForm">
+            <div class="field-row two">
+              <label>
+                <span>Market</span>
+                <select id="market">
+                  <option value="SOL-PERP" data-price="145.2">SOL-PERP</option>
+                  <option value="BTC-PERP" data-price="64350">BTC-PERP</option>
+                  <option value="ETH-PERP" data-price="3210">ETH-PERP</option>
+                </select>
+              </label>
+              <fieldset class="segmented" aria-label="Position side">
+                <legend>Side</legend>
+                <label>
+                  <input type="radio" name="side" value="long" checked />
+                  <span>Long</span>
+                </label>
+                <label>
+                  <input type="radio" name="side" value="short" />
+                  <span>Short</span>
+                </label>
+              </fieldset>
+            </div>
+
+            <div class="field-row two">
+              <label>
+                <span>Entry price</span>
+                <input id="entryPrice" type="number" min="0.01" step="0.01" value="145.20" />
+              </label>
+              <label>
+                <span>Mark price</span>
+                <input id="markPrice" type="number" min="0.01" step="0.01" value="151.40" />
+              </label>
+            </div>
+
+            <div class="field-row two">
+              <label>
+                <span>Collateral</span>
+                <input id="collateral" type="number" min="1" step="1" value="2500" />
+              </label>
+              <label>
+                <span>Leverage</span>
+                <input id="leverage" type="number" min="1" max="25" step="0.5" value="5" />
+              </label>
+            </div>
+
+            <div class="field-row two">
+              <label>
+                <span>Maintenance margin</span>
+                <input id="maintenance" type="number" min="0.5" max="20" step="0.1" value="6.5" />
+              </label>
+              <label>
+                <span>Taker fee</span>
+                <input id="fee" type="number" min="0" max="2" step="0.01" value="0.05" />
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <aside class="summary-panel" aria-live="polite">
+          <div class="metric primary">
+            <span>Private notional</span>
+            <strong id="notional">$12,500.00</strong>
+          </div>
+          <div class="metric-grid">
+            <div class="metric">
+              <span>Position size</span>
+              <strong id="positionSize">86.0882 SOL</strong>
+            </div>
+            <div class="metric">
+              <span>Unrealized PnL</span>
+              <strong id="pnl">$533.68</strong>
+            </div>
+            <div class="metric">
+              <span>Equity after fee</span>
+              <strong id="equity">$3,027.43</strong>
+            </div>
+            <div class="metric">
+              <span>Liquidation estimate</span>
+              <strong id="liquidation">$119.48</strong>
+            </div>
+          </div>
+          <div class="risk-band" id="riskBand">
+            <span id="riskLabel">Healthy</span>
+            <div class="risk-track"><span id="riskFill"></span></div>
+          </div>
+          <p class="note">
+            Values are calculated from the fields above in this browser. Deployment verification
+            comes only from local metadata files.
+          </p>
+        </aside>
       </section>
-      <section class="grid">
-        <article><h2>Encrypted Position</h2><p>Arcium keeps trader intent confidential while the Solana program tracks market-level risk.</p></article>
-        <article><h2>Private Risk Checks</h2><p>Liquidation and margin logic runs over encrypted position state.</p></article>
-        <article><h2>Public Settlement</h2><p>Final PnL, collateral movement, and liquidation payouts remain auditable.</p></article>
+
+      <section class="verified-panel" id="verified-state" aria-live="polite">
+        <div class="panel-heading compact">
+          <div>
+            <p class="eyebrow">Verified state</p>
+            <h2>Deployment metadata</h2>
+          </div>
+          <span class="status-badge" id="deploymentStatus">Checking local files</span>
+        </div>
+
+        <dl class="metadata-grid">
+          <div>
+            <dt>Program ID</dt>
+            <dd id="programId">not deployed yet</dd>
+          </div>
+          <div>
+            <dt>Network</dt>
+            <dd id="network">not deployed yet</dd>
+          </div>
+          <div>
+            <dt>Cluster</dt>
+            <dd id="cluster">not deployed yet</dd>
+          </div>
+          <div>
+            <dt>Source file</dt>
+            <dd id="metadataSource">not deployed yet</dd>
+          </div>
+        </dl>
       </section>
     </main>
   </body>
