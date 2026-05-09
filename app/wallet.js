@@ -1,54 +1,68 @@
-const CLUSTER = "devnet";
 const RPC_URL = "https://api.devnet.solana.com";
+const CLUSTER = "devnet";
+const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
 const state = {
   walletName: "",
   publicKey: "",
-  deployment: null,
+  provider: null,
+  config: null,
+  web3: null,
 };
 
 const short = (value) =>
   value ? `${value.slice(0, 4)}...${value.slice(-4)}` : "Not connected";
-
 const wallets = [
   {
     name: "Phantom",
-    install: "https://phantom.app/",
-    get provider() {
-      return window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null);
-    },
+    url: "https://phantom.app/",
+    provider: () =>
+      window.phantom?.solana ||
+      (window.solana?.isPhantom ? window.solana : null),
   },
   {
     name: "Solflare",
-    install: "https://solflare.com/",
-    get provider() {
-      return window.solflare || (window.solana?.isSolflare ? window.solana : null);
-    },
+    url: "https://solflare.com/",
+    provider: () =>
+      window.solflare || (window.solana?.isSolflare ? window.solana : null),
   },
   {
     name: "Backpack",
-    install: "https://backpack.app/",
-    get provider() {
-      return window.backpack?.solana || (window.solana?.isBackpack ? window.solana : null);
-    },
+    url: "https://backpack.app/",
+    provider: () =>
+      window.backpack?.solana ||
+      (window.solana?.isBackpack ? window.solana : null),
   },
   {
     name: "Detected wallet",
-    install: "https://solana.com/ecosystem/explore?categories=wallet",
-    get provider() {
-      return window.solana || null;
-    },
+    url: "https://solana.com/ecosystem/explore?categories=wallet",
+    provider: () => window.solana || null,
   },
 ];
 
 boot();
 
-function boot() {
+async function boot() {
+  state.config = await loadConfig();
   injectWalletModal();
   bindWalletButtons();
-  bindProofPanels();
-  bindDemoForms();
-  hydrateDeployment();
+  bindForms();
   renderWallet();
+}
+
+async function getWeb3() {
+  if (!state.web3)
+    state.web3 = await import("https://esm.sh/@solana/web3.js@1.95.8?bundle");
+  return state.web3;
+}
+
+async function loadConfig() {
+  try {
+    const response = await fetch("/app/config/program.json", {
+      cache: "no-store",
+    });
+    if (response.ok) return await response.json();
+  } catch {}
+  return null;
 }
 
 function injectWalletModal() {
@@ -59,27 +73,23 @@ function injectWalletModal() {
   modal.innerHTML = `
     <section class="wallet-dialog" role="dialog" aria-modal="true" aria-labelledby="wallet-title">
       <div class="status-row">
-        <div>
-          <p class="eyebrow">Solana wallet</p>
-          <h2 id="wallet-title">Choose a wallet</h2>
-        </div>
+        <div><p class="eyebrow">Solana wallet</p><h2 id="wallet-title">Choose a wallet</h2></div>
         <button class="ghost" type="button" data-wallet-close>Close</button>
       </div>
-      <p class="muted">Connect with an installed Solana wallet. The app never asks for seed phrases or private keys.</p>
+      <p class="muted">Connect with an installed Solana wallet. This app never asks for seed phrases or private keys.</p>
       <div data-wallet-options></div>
     </section>`;
   document.body.append(modal);
   modal.addEventListener("click", (event) => {
-    if (event.target === modal || event.target.closest("[data-wallet-close]")) {
+    if (event.target === modal || event.target.closest("[data-wallet-close]"))
       modal.classList.remove("open");
-    }
   });
 }
 
 function bindWalletButtons() {
-  document.querySelectorAll("[data-wallet-connect]").forEach((button) => {
-    button.addEventListener("click", openWalletModal);
-  });
+  document
+    .querySelectorAll("[data-wallet-connect]")
+    .forEach((button) => button.addEventListener("click", openWalletModal));
 }
 
 function openWalletModal() {
@@ -87,35 +97,38 @@ function openWalletModal() {
   const options = modal.querySelector("[data-wallet-options]");
   options.replaceChildren();
   for (const wallet of wallets) {
-    const installed = Boolean(wallet.provider);
+    const provider = wallet.provider();
     const option = document.createElement("button");
     option.type = "button";
     option.className = "wallet-option";
-    option.innerHTML = `<strong>${wallet.name}</strong><small>${installed ? "Installed" : "Install"}</small>`;
+    option.innerHTML = `<strong>${wallet.name}</strong><small>${
+      provider ? "Installed" : "Install"
+    }</small>`;
     option.addEventListener("click", () =>
-      installed ? connectWallet(wallet) : window.open(wallet.install, "_blank", "noreferrer")
+      provider
+        ? connectWallet(wallet.name, provider)
+        : window.open(wallet.url, "_blank", "noreferrer")
     );
     options.append(option);
   }
   modal.classList.add("open");
 }
 
-async function connectWallet(wallet) {
-  try {
-    const provider = wallet.provider;
-    const response = await provider.connect();
-    state.walletName = wallet.name;
-    state.publicKey = response.publicKey?.toString() || provider.publicKey?.toString() || "";
-    document.querySelector("#wallet-modal")?.classList.remove("open");
-    renderWallet();
-  } catch (error) {
-    pushActivity("Wallet connection rejected", "Connect request was cancelled or failed.");
-  }
+async function connectWallet(name, provider) {
+  const response = await provider.connect();
+  state.walletName = name;
+  state.provider = provider;
+  state.publicKey =
+    response.publicKey?.toString() || provider.publicKey?.toString() || "";
+  document.querySelector("#wallet-modal")?.classList.remove("open");
+  renderWallet();
 }
 
 function renderWallet() {
   document.querySelectorAll("[data-wallet-connect]").forEach((button) => {
-    button.textContent = state.publicKey ? `${state.walletName}: ${short(state.publicKey)}` : "Connect wallet";
+    button.textContent = state.publicKey
+      ? `${state.walletName}: ${short(state.publicKey)}`
+      : "Connect wallet";
   });
   document.querySelectorAll("[data-wallet-full]").forEach((node) => {
     node.textContent = state.publicKey || "Connect a wallet to continue";
@@ -126,79 +139,204 @@ function renderWallet() {
   });
 }
 
-async function hydrateDeployment() {
-  try {
-    const response = await fetch("/app/deployment.json", { cache: "no-store" });
-    if (response.ok) state.deployment = await response.json();
-  } catch {
-    state.deployment = null;
-  }
-
-  const hasDeployment = Boolean(state.deployment?.programId);
-  document.querySelectorAll("[data-contract-state]").forEach((node) => {
-    node.textContent = hasDeployment ? "Devnet contract configured" : "Contract deployment required";
-    node.className = `status-pill ${hasDeployment ? "good" : "warn"}`;
-  });
-  document.querySelectorAll("[data-program-id]").forEach((node) => {
-    node.textContent = state.deployment?.programId || "Not configured";
-  });
-  document.querySelectorAll("[data-deploy-tx]").forEach((node) => {
-    const sig = state.deployment?.programDeploySignature || "";
-    node.innerHTML = sig
-      ? `<a href="${explorerTx(sig)}" target="_blank" rel="noreferrer">${short(sig)}</a>`
-      : "Not available";
-  });
-  document.querySelectorAll("[data-submit-action]").forEach((button) => {
-    button.disabled = !hasDeployment;
-    if (!hasDeployment) button.textContent = "Deploy contract first";
-  });
-}
-
-function bindProofPanels() {
-  document.querySelectorAll("[data-proof-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      button.closest(".proof-panel")?.classList.toggle("open");
-    });
-  });
-}
-
-function bindDemoForms() {
+function bindForms() {
   document.querySelectorAll("[data-action-form]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!state.publicKey) {
-        openWalletModal();
-        return;
-      }
-      if (!state.deployment?.programId) {
-        pushActivity("Deployment missing", "This function needs a deployed Arcium program before it can submit.");
-        return;
-      }
-      const action = form.getAttribute("data-action-form") || "Action";
-      pushActivity(`${action} prepared`, "Wallet is connected. Transaction wiring is ready for the deployed instruction client.");
+      await submitAction(form);
     });
   });
 }
 
-function pushActivity(title, detail) {
-  const feed = document.querySelector("[data-activity]");
-  if (!feed) return;
+async function submitAction(form) {
+  if (!state.provider || !state.publicKey) {
+    openWalletModal();
+    return;
+  }
+  const submit = form.querySelector("[data-submit-action]");
+  const originalText = submit?.textContent || "Submit";
+  try {
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = "Sending transaction...";
+    }
+    const signature = await sendRecordAction(form);
+    pushActivity(
+      "Transaction confirmed",
+      `Explorer: ${explorerTx(signature)}`,
+      signature
+    );
+  } catch (error) {
+    pushActivity(
+      "Transaction failed",
+      error?.message || "The wallet or RPC rejected the transaction."
+    );
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = originalText;
+    }
+  }
+}
+
+async function sendRecordAction(form) {
+  const web3 = await getWeb3();
+  const programId = new web3.PublicKey(
+    state.config?.programId || state.config?.program_id
+  );
+  const actor = new web3.PublicKey(state.publicKey);
+  const connection = new web3.Connection(
+    state.config?.rpcUrl || RPC_URL,
+    "confirmed"
+  );
+  const actionId =
+    BigInt(Date.now()) * 1000n + BigInt(Math.floor(Math.random() * 1000));
+  const [receipt] = web3.PublicKey.findProgramAddressSync(
+    [utf8("action"), actor.toBuffer(), u64(actionId)],
+    programId
+  );
+  const payloadHash = await hashPayload(form);
+  const data = concatBytes(
+    await discriminator("record_action"),
+    u64(actionId),
+    new Uint8Array([actionType(form)]),
+    payloadHash
+  );
+  const ix = new web3.TransactionInstruction({
+    programId,
+    keys: [
+      { pubkey: actor, isSigner: true, isWritable: true },
+      { pubkey: receipt, isSigner: false, isWritable: true },
+      {
+        pubkey: new web3.PublicKey(SYSTEM_PROGRAM_ID),
+        isSigner: false,
+        isWritable: false,
+      },
+    ],
+    data,
+  });
+  const tx = new web3.Transaction().add(ix);
+  tx.feePayer = actor;
+  tx.recentBlockhash = (
+    await connection.getLatestBlockhash("confirmed")
+  ).blockhash;
+  if (state.provider.signAndSendTransaction) {
+    const result = await state.provider.signAndSendTransaction(tx);
+    const signature = typeof result === "string" ? result : result.signature;
+    await connection.confirmTransaction(signature, "confirmed");
+    return signature;
+  }
+  const signed = await state.provider.signTransaction(tx);
+  const signature = await connection.sendRawTransaction(signed.serialize());
+  await connection.confirmTransaction(signature, "confirmed");
+  return signature;
+}
+
+async function hashPayload(form) {
+  const values = [...form.querySelectorAll("input, select, textarea")]
+    .map(
+      (node) =>
+        `${node.closest("label")?.textContent?.trim() || node.name}:${
+          node.value
+        }`
+    )
+    .join("|");
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", utf8(values)));
+}
+
+async function discriminator(name) {
+  return new Uint8Array(
+    await crypto.subtle.digest("SHA-256", utf8(`global:${name}`))
+  ).slice(0, 8);
+}
+
+function actionType(form) {
+  const action = (form.getAttribute("data-action-form") || "").toLowerCase();
+  if (
+    action.includes("create") ||
+    action.includes("register") ||
+    action.includes("supply")
+  )
+    return 1;
+  if (
+    action.includes("bid") ||
+    action.includes("borrow") ||
+    action.includes("open")
+  )
+    return 2;
+  if (
+    action.includes("close") ||
+    action.includes("settle") ||
+    action.includes("repay")
+  )
+    return 3;
+  if (
+    action.includes("risk") ||
+    action.includes("health") ||
+    action.includes("discover")
+  )
+    return 4;
+  if (action.includes("liquidate") || action.includes("match")) return 5;
+  return 9;
+}
+
+function pushActivity(title, detail, signature = "") {
+  const feed =
+    document.querySelector("[data-activity]") || ensureActivityFeed();
   const item = document.createElement("article");
   item.className = "activity-item";
-  item.innerHTML = `<strong>${escapeHtml(title)}</strong><p>${escapeHtml(detail)}</p>`;
+  item.innerHTML = `<strong>${escapeHtml(title)}</strong><p>${
+    signature
+      ? `<a href="${explorerTx(
+          signature
+        )}" target="_blank" rel="noreferrer">${escapeHtml(
+          short(signature)
+        )}</a>`
+      : escapeHtml(detail)
+  }</p>`;
   feed.prepend(item);
+}
+
+function ensureActivityFeed() {
+  let feed = document.querySelector("[data-generated-activity]");
+  if (feed) return feed;
+  feed = document.createElement("div");
+  feed.className = "activity activity-toast-stack";
+  feed.setAttribute("data-generated-activity", "true");
+  document.body.append(feed);
+  return feed;
 }
 
 function explorerTx(signature) {
   return `https://explorer.solana.com/tx/${signature}?cluster=${CLUSTER}`;
 }
 
+function utf8(value) {
+  return new TextEncoder().encode(String(value));
+}
+
+function u64(value) {
+  const out = new Uint8Array(8);
+  new DataView(out.buffer).setBigUint64(0, BigInt(value), true);
+  return out;
+}
+
+function concatBytes(...parts) {
+  const out = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  })[char]);
+  return String(value).replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[
+        char
+      ])
+  );
 }

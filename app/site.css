@@ -320,7 +320,7 @@ textarea:focus {
   border-color: var(--accent);
 }
 
-.proof-toggle {
+.verification-toggle {
   width: 100%;
   cursor: pointer;
   border: 1px solid var(--line);
@@ -331,13 +331,13 @@ textarea:focus {
   text-align: left;
 }
 
-.proof-body {
+.verification-body {
   display: none;
   margin-top: 12px;
   overflow-wrap: anywhere;
 }
 
-.proof-panel.open .proof-body {
+.verification-panel.open .verification-body {
   display: block;
 }
 
@@ -397,6 +397,15 @@ textarea:focus {
   border-radius: 8px;
   padding: 12px;
   background: rgba(0, 0, 0, 0.18);
+}
+
+.activity-toast-stack {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 120;
+  width: min(420px, calc(100% - 36px));
+  margin-top: 0;
 }
 
 .wallet-modal {
