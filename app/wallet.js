@@ -44,9 +44,11 @@ boot();
 async function boot() {
   state.config = await loadConfig();
   injectWalletModal();
+  ensureWorkspace();
   bindWalletButtons();
   bindForms();
   renderWallet();
+  renderLocalWorkspace();
 }
 
 async function getWeb3() {
@@ -122,6 +124,7 @@ async function connectWallet(name, provider) {
     response.publicKey?.toString() || provider.publicKey?.toString() || "";
   document.querySelector("#wallet-modal")?.classList.remove("open");
   renderWallet();
+  renderLocalWorkspace();
 }
 
 function renderWallet() {
@@ -166,6 +169,8 @@ async function submitAction(form) {
       `Explorer: ${explorerTx(signature)}`,
       signature
     );
+    await saveLocalRecord(form, signature);
+    renderLocalWorkspace();
   } catch (error) {
     pushActivity(
       "Transaction failed",
@@ -295,6 +300,226 @@ function pushActivity(title, detail, signature = "") {
       : escapeHtml(detail)
   }</p>`;
   feed.prepend(item);
+}
+
+function ensureWorkspace() {
+  if (document.querySelector("[data-local-workspace]")) return;
+  const layout = document.querySelector(".layout");
+  if (!layout) return;
+  const panel = document.createElement("aside");
+  panel.className = "panel local-workspace";
+  panel.setAttribute("data-local-workspace", "true");
+  panel.innerHTML = `
+    <p class="eyebrow">Private workspace</p>
+    <h2>Your signed actions</h2>
+    <p class="muted">These entries are kept in this browser so the UI can show your own private drafts next to explorer-confirmed transactions. Raw private inputs are not read back from Solana.</p>
+    <div class="local-insight" data-local-insight></div>
+    <div class="activity" data-local-records></div>`;
+  layout.append(panel);
+}
+
+async function saveLocalRecord(form, signature) {
+  const fields = collectFields(form);
+  const record = {
+    id: `${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+    action: form.getAttribute("data-action-form") || "Action",
+    createdAt: new Date().toISOString(),
+    wallet: state.publicKey,
+    signature,
+    explorer: explorerTx(signature),
+    fields,
+    payloadHash: await hex(await hashPayload(form)),
+  };
+  const contact = await enrichContactRecord(record);
+  const records = readRecords();
+  records.unshift(contact || record);
+  writeRecords(records.slice(0, 80));
+}
+
+function collectFields(form) {
+  return [...form.querySelectorAll("input, select, textarea")]
+    .map((node) => ({
+      label: cleanLabel(
+        node.closest("label")?.textContent || node.name || "Input"
+      ),
+      value: node.value.trim(),
+      kind: node.tagName.toLowerCase(),
+    }))
+    .filter((field) => field.value);
+}
+
+async function enrichContactRecord(record) {
+  const action = record.action.toLowerCase();
+  if (!isContactApp()) return null;
+  if (action.includes("register")) {
+    const identifier = record.fields[0]?.value || "";
+    const normalized = normalizeContact(identifier);
+    return {
+      ...record,
+      privateType: "registered-identifier",
+      localIdentifier: identifier,
+      normalizedIdentifier: normalized,
+      identifierHash: await hashText(normalized),
+    };
+  }
+  if (action.includes("discover")) {
+    const contacts = splitContacts(record.fields[0]?.value || "");
+    const registered = readRecords().filter((item) => item.identifierHash);
+    const contactHashes = await Promise.all(
+      contacts.map(async (contact) => ({
+        contact,
+        normalized: normalizeContact(contact),
+        hash: await hashText(normalizeContact(contact)),
+      }))
+    );
+    const registeredHashes = new Set(
+      registered.map((item) => item.identifierHash)
+    );
+    return {
+      ...record,
+      privateType: "discovery-request",
+      contactsChecked: contacts.length,
+      matches: contactHashes
+        .filter((item) => registeredHashes.has(item.hash))
+        .map((item) => item.contact),
+    };
+  }
+  return null;
+}
+
+function renderLocalWorkspace() {
+  const list = document.querySelector("[data-local-records]");
+  const insight = document.querySelector("[data-local-insight]");
+  if (!list || !insight) return;
+  const records = readRecords();
+  insight.innerHTML = renderInsight(records);
+  list.replaceChildren();
+  if (!records.length) {
+    list.innerHTML = `<article class="activity-item"><strong>No local actions yet</strong><p>Connect a wallet, submit a form, and the signed receipt will appear here.</p></article>`;
+    return;
+  }
+  for (const record of records.slice(0, 8)) {
+    const item = document.createElement("article");
+    item.className = "activity-item";
+    item.innerHTML = renderRecord(record);
+    list.append(item);
+  }
+}
+
+function renderInsight(records) {
+  if (isContactApp()) {
+    const registered = records.filter(
+      (item) => item.privateType === "registered-identifier"
+    );
+    const discoveries = records.filter(
+      (item) => item.privateType === "discovery-request"
+    );
+    const matches = discoveries.flatMap((item) => item.matches || []);
+    return `<div class="mini-grid"><div><strong>${
+      registered.length
+    }</strong><span>Local commitments</span></div><div><strong>${
+      matches.length
+    }</strong><span>Local matches</span></div></div>${
+      matches.length
+        ? `<p class="match-list">${matches.map(escapeHtml).join(", ")}</p>`
+        : `<p class="muted">Matches appear only when a discovery request contains a locally registered identifier.</p>`
+    }`;
+  }
+  const app = appName();
+  const count = records.length;
+  const last = records[0]?.action || "No action";
+  return `<div class="mini-grid"><div><strong>${count}</strong><span>Signed receipts</span></div><div><strong>${escapeHtml(
+    last
+  )}</strong><span>Latest local action</span></div></div><p class="muted">${escapeHtml(
+    app
+  )} keeps private inputs local and links each action to a confirmed Solana transaction.</p>`;
+}
+
+function renderRecord(record) {
+  const fields = record.fields
+    .slice(0, 4)
+    .map(
+      (field) =>
+        `<li><span>${escapeHtml(field.label)}</span><strong>${escapeHtml(
+          field.value
+        )}</strong></li>`
+    )
+    .join("");
+  const matches = record.matches?.length
+    ? `<p class="match-list">Matched locally: ${record.matches
+        .map(escapeHtml)
+        .join(", ")}</p>`
+    : "";
+  return `<strong>${escapeHtml(record.action)}</strong><p><a href="${
+    record.explorer
+  }" target="_blank" rel="noreferrer">${escapeHtml(
+    short(record.signature)
+  )}</a> · ${new Date(
+    record.createdAt
+  ).toLocaleString()}</p>${matches}<ul class="record-fields">${fields}</ul><p class="muted">Payload hash: ${escapeHtml(
+    record.payloadHash.slice(0, 16)
+  )}...</p>`;
+}
+
+function readRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey()) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeRecords(records) {
+  localStorage.setItem(storageKey(), JSON.stringify(records));
+}
+
+function storageKey() {
+  const program = state.config?.programId || location.host;
+  const wallet = state.publicKey || "disconnected";
+  return `arcium-dapp:${program}:${wallet}`;
+}
+
+function isContactApp() {
+  return (
+    (state.config?.programId || "").startsWith("2cWb") ||
+    document.title.toLowerCase().includes("contact")
+  );
+}
+
+function appName() {
+  return (
+    document.querySelector(".brand span:last-child")?.textContent ||
+    document.title ||
+    "This dapp"
+  );
+}
+
+function splitContacts(value) {
+  return value
+    .split(/[\n,;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeContact(value) {
+  return String(value).trim().toLowerCase().replace(/\s+/g, "");
+}
+
+async function hashText(value) {
+  return hex(
+    new Uint8Array(await crypto.subtle.digest("SHA-256", utf8(value)))
+  );
+}
+
+async function hex(bytes) {
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function cleanLabel(value) {
+  return String(value)
+    .replace(/Connect a wallet to continue/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function ensureActivityFeed() {
