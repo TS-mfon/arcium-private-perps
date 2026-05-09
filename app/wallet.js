@@ -57,7 +57,7 @@ async function getWeb3() {
 
 async function loadConfig() {
   try {
-    const response = await fetch("/app/config/program.json", {
+    const response = await fetch("/config/program.json", {
       cache: "no-store",
     });
     if (response.ok) return await response.json();
