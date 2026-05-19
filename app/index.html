@@ -1,1 +1,78 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="Private perpetuals on Arcium."/><title>Arcium Private Perps</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="stylesheet" href="/site.css"/><script src="/wallet.js" defer></script></head><body><main class="shell"><header class="topbar"><a class="brand" href="/"><span class="brand-mark">P</span><span>Private Perps</span></a><nav class="nav-links"><a href="/how-it-works.html">How it works</a><a href="/pages/open-position.html">Open</a><a href="/pages/risk-check.html">Risk</a><a href="/pages/settle-pnl.html">Settle</a><button class="wallet-trigger" type="button" data-wallet-connect>Connect wallet</button></nav></header><section class="hero"><div><p class="eyebrow">Confidential trading</p><h1>Trade perps without broadcasting your intent.</h1><p class="lede">Private position inputs, explicit wallet signing, oracle-aware risk checks, and explorer-verifiable settlement flows for the SOL/USDC devnet market.</p><div class="cta-row"><a class="primary" href="/pages/open-position.html">Open position</a><a class="secondary" href="/pages/risk-check.html">Check risk</a></div></div><aside class="panel hero-card"><p class="eyebrow">Market desk</p><h2>SOL / USDC private perps</h2><p>Connect a wallet, prepare encrypted position data, and keep sensitive trade details off the public UI.</p><div class="hero-card-grid"><div class="stat"><strong>SOL</strong><span class="muted">Base market</span></div><div class="stat"><strong>Pyth</strong><span class="muted">Devnet oracle target</span></div></div></aside></section><section class="grid"><a class="feature-card" href="/pages/open-position.html"><span>01</span><h2>Open</h2><p>Prepare side, size, collateral, and leverage inputs.</p></a><a class="feature-card" href="/pages/risk-check.html"><span>02</span><h2>Risk</h2><p>Request a private margin and liquidation check.</p></a><a class="feature-card" href="/pages/settle-pnl.html"><span>03</span><h2>Settle</h2><p>Finalize PnL from verified computation output.</p></a></section></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Private perpetual trading on Arcium." />
+    <title>Arcium Private Perps</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/site.css" />
+    <script src="/wallet.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/"><span class="brand-mark">P</span><span>Private Perps</span></a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="/how-it-works.html">How it works</a>
+          <a href="/pages/open-position.html">Open</a>
+          <a href="/pages/risk-check.html">Risk</a>
+          <a href="/pages/settle-pnl.html">Settle</a>
+          <button class="wallet-trigger" type="button" data-wallet-connect>Connect wallet</button>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Confidential derivatives</p>
+          <h1>Directional conviction should not advertise itself before the trade is done.</h1>
+          <p class="lede">
+            Private Perps brings a cleaner market surface to Solana: live position accounts, risk
+            receipts, and local-only strategy drafts tied back to explorer-confirmed wallet actions.
+          </p>
+          <div class="cta-row">
+            <a class="primary" href="/pages/open-position.html">Open a position</a>
+            <a class="secondary" href="/pages/risk-check.html">Run a risk check</a>
+          </div>
+        </div>
+        <aside class="panel hero-card">
+          <p class="eyebrow">Trading rail</p>
+          <h2>Open, check, settle.</h2>
+          <p>
+            The dapp now reads back the real on-chain objects it creates, so a trader can move from form
+            entry to explorer-verifiable position state without leaving the product.
+          </p>
+          <div class="hero-card-grid">
+            <div class="stat"><strong>Live</strong><span class="muted">Position PDAs</span></div>
+            <div class="stat"><strong>Local</strong><span class="muted">Private strategy drafts</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="editorial-band">
+        <article class="editorial-copy">
+          <p class="eyebrow">Market reading</p>
+          <h2>Less public trader intent means a less predatory tape.</h2>
+          <p class="lede">
+            Use this flow for private sizing, leverage planning, and wallet-signed position updates that
+            do not spill the full thesis into readable state.
+          </p>
+        </article>
+        <article class="route-list">
+          <p class="eyebrow">Route map</p>
+          <ol>
+            <li>Open a private position and mint the position account.</li>
+            <li>Emit a risk-check receipt that can be traced on-chain.</li>
+            <li>Settle the position path and keep the draft thesis local.</li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="grid" aria-label="Perps functions">
+        <a class="feature-card" href="/pages/open-position.html"><span>01</span><h2>Open</h2><p>Create the private position account and attach the public margin.</p></a>
+        <a class="feature-card" href="/pages/risk-check.html"><span>02</span><h2>Risk</h2><p>Publish the risk-check receipt and keep the strategy draft off-chain.</p></a>
+        <a class="feature-card" href="/pages/settle-pnl.html"><span>03</span><h2>Settle</h2><p>Close the loop with a settlement receipt and explorer trail.</p></a>
+      </section>
+    </main>
+  </body>
+</html>

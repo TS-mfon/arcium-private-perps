@@ -1,1 +1,42 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>How Private Perps Work</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="stylesheet" href="/site.css"/><script src="/wallet.js" defer></script></head><body><main class="shell"><header class="topbar"><a class="brand" href="/"><span class="brand-mark">P</span><span>Private Perps</span></a><nav class="nav-links"><a href="/pages/open-position.html">Open</a><a href="/pages/risk-check.html">Risk</a><a href="/pages/settle-pnl.html">Settle</a><button class="wallet-trigger" type="button" data-wallet-connect>Connect wallet</button></nav></header><section class="page-head"><p class="eyebrow">How it works</p><h1>Position math runs privately; settlement stays verifiable.</h1><p class="lede">The UI collects trading intent, the wallet signs Solana actions, and Arcium is the privacy layer for sensitive position and risk computation.</p></section><section class="grid"><article class="feature-card"><span>01</span><h2>Deposit margin</h2><p>Public collateral movement is explicit and wallet-approved.</p></article><article class="feature-card"><span>02</span><h2>Encrypt intent</h2><p>Side, size, and entry details are handled as confidential inputs.</p></article><article class="feature-card"><span>03</span><h2>Reveal outcomes</h2><p>Only risk flags and final PnL are surfaced after verification.</p></article></section></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How Private Perps Work</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/site.css" />
+    <script src="/wallet.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/"><span class="brand-mark">P</span><span>Private Perps</span></a>
+        <nav class="nav-links"><a href="/pages/open-position.html">Open</a><a href="/pages/risk-check.html">Risk</a><a href="/pages/settle-pnl.html">Settle</a><button class="wallet-trigger" type="button" data-wallet-connect>Connect wallet</button></nav>
+      </header>
+      <section class="page-head">
+        <p class="eyebrow">How it works</p>
+        <h1>Positions become visible only where the market actually needs visibility.</h1>
+        <p class="lede">The product separates private trade composition from public account creation, then pulls the created Solana accounts back into the interface so the trader can inspect the real state immediately.</p>
+      </section>
+      <section class="editorial-band">
+        <article class="editorial-copy">
+          <p class="eyebrow">Operating logic</p>
+          <ol class="step-list">
+            <li>The trader opens a position and writes the position PDA on-chain.</li>
+            <li>Risk and settlement steps emit real receipts instead of fake frontend state.</li>
+            <li>The local workspace stores the private thesis and maps it to the explorer path.</li>
+          </ol>
+        </article>
+        <article class="route-list">
+          <p class="eyebrow">Why the split matters</p>
+          <ol>
+            <li>Readable position details invite copy-trading and liquidation targeting.</li>
+            <li>Local drafts preserve the private structure of the trade.</li>
+            <li>Explorer-linked receipts still give operators and users a verifiable trail.</li>
+          </ol>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

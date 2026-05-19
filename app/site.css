@@ -1,21 +1,22 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap");
+
 :root {
-  color-scheme: dark;
-  --bg: #060907;
-  --bg-soft: #0b1210;
-  --panel: rgba(12, 19, 17, 0.84);
-  --panel-2: rgba(15, 28, 24, 0.72);
-  --line: rgba(204, 235, 224, 0.14);
-  --line-strong: rgba(98, 230, 170, 0.36);
-  --text: #f4fbf7;
-  --muted: #9fb2aa;
-  --accent: #62e6aa;
-  --accent-2: #f3c96b;
-  --red: #ff7a7a;
-  --green: #7cf7b4;
-  --shadow: 0 24px 90px rgba(0, 0, 0, 0.38);
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  color-scheme: light;
+  --bg: #f4f0e8;
+  --bg-soft: #ece4d8;
+  --panel: rgba(255, 249, 240, 0.82);
+  --panel-2: rgba(243, 236, 225, 0.8);
+  --line: rgba(26, 26, 29, 0.12);
+  --line-strong: rgba(26, 26, 29, 0.3);
+  --text: #1a1a1d;
+  --muted: #5b544d;
+  --accent: #d9534f;
+  --accent-2: #b97938;
+  --red: #d9534f;
+  --green: #2f8f64;
+  --shadow: 0 24px 70px rgba(26, 26, 29, 0.1);
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  scroll-behavior: smooth;
 }
 
 * {
@@ -27,9 +28,23 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    linear-gradient(130deg, rgba(98, 230, 170, 0.13), transparent 32rem),
-    radial-gradient(circle at 84% 10%, rgba(243, 201, 107, 0.13), transparent 28rem),
-    linear-gradient(180deg, var(--bg), var(--bg-soft) 54%, #050806);
+    linear-gradient(130deg, rgba(217, 83, 79, 0.08), transparent 30rem),
+    radial-gradient(circle at 88% 8%, rgba(185, 121, 56, 0.16), transparent 20rem),
+    linear-gradient(180deg, var(--bg), var(--bg-soft) 58%, #e7dfd2);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(26, 26, 29, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 29, 0.04) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 82%);
 }
 
 a {
@@ -58,8 +73,8 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 14px 0 22px;
-  background: linear-gradient(180deg, rgba(6, 9, 7, 0.96), rgba(6, 9, 7, 0));
+  padding: 16px 0 20px;
+  background: linear-gradient(180deg, rgba(244, 240, 232, 0.88), rgba(244, 240, 232, 0.12));
   backdrop-filter: blur(16px);
 }
 
@@ -67,7 +82,9 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font-weight: 900;
+  font-family: "Sora", "IBM Plex Sans", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .brand-mark {
@@ -75,9 +92,10 @@ textarea {
   width: 40px;
   height: 40px;
   place-items: center;
-  border-radius: 10px;
-  color: #06100b;
-  background: linear-gradient(135deg, var(--accent), #d7ffe9);
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(217, 83, 79, 0.22), rgba(255, 255, 255, 0.85));
 }
 
 .nav-links {
@@ -93,42 +111,50 @@ textarea {
 .wallet-trigger {
   min-height: 40px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 10px 13px;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.52);
+  transition:
+    transform 180ms ease,
+    border-radius 180ms ease,
+    background 180ms ease;
 }
 
 .nav-links a:hover,
-.ghost:hover {
-  color: var(--text);
+.ghost:hover,
+.wallet-trigger:hover {
   border-color: var(--line-strong);
+  border-radius: 18px;
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .wallet-trigger,
 .primary,
 .action {
   cursor: pointer;
-  border: 0;
-  color: #06100b;
+  border: 1px solid transparent;
+  color: #fff7f1;
   background: var(--accent);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
   gap: clamp(22px, 4vw, 56px);
   align-items: center;
   min-height: calc(100vh - 112px);
+  position: relative;
 }
 
 .eyebrow {
   margin: 0 0 12px;
   color: var(--accent-2);
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -142,22 +168,25 @@ p {
 h1 {
   max-width: 880px;
   margin-bottom: 22px;
-  font-size: clamp(44px, 7vw, 92px);
-  line-height: 0.94;
-  letter-spacing: 0;
+  font-family: "Sora", "IBM Plex Sans", sans-serif;
+  font-size: clamp(42px, 7vw, 96px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
 }
 
 h2 {
   margin-bottom: 10px;
-  font-size: clamp(24px, 3vw, 36px);
-  letter-spacing: 0;
+  font-family: "Sora", "IBM Plex Sans", sans-serif;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.04em;
 }
 
 .lede {
   max-width: 720px;
-  color: #d5e4dd;
-  font-size: clamp(18px, 2vw, 23px);
-  line-height: 1.55;
+  color: var(--muted);
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.58;
 }
 
 .cta-row,
@@ -174,37 +203,50 @@ h2 {
 .action,
 .ghost {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 46px;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  padding: 0 16px;
+  border-radius: 999px;
+  padding: 0 18px;
+  transition:
+    transform 180ms ease,
+    border-radius 180ms ease,
+    background 180ms ease;
 }
 
 .secondary {
   color: var(--text);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.primary:hover,
+.secondary:hover,
+.action:hover,
+.ghost:hover {
+  border-radius: 18px;
+  transform: translateY(-1px) scale(1.01);
 }
 
 .panel,
 .feature-card,
 .stat {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 20px 20px 20px 6px;
   background: var(--panel);
   box-shadow: var(--shadow);
 }
 
 .panel {
-  padding: 22px;
+  padding: 24px;
 }
 
 .hero-card {
   min-height: 390px;
-  padding: 24px;
+  padding: 28px;
+  transform: translateY(3rem);
   background:
-    linear-gradient(145deg, rgba(98, 230, 170, 0.16), transparent),
+    linear-gradient(145deg, rgba(217, 83, 79, 0.12), transparent),
     var(--panel);
 }
 
@@ -224,6 +266,7 @@ h2 {
   margin-bottom: 4px;
   color: var(--accent);
   font-size: 28px;
+  font-family: "Sora", "IBM Plex Sans", sans-serif;
 }
 
 .muted,
@@ -237,26 +280,37 @@ h2 {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 28px;
+  gap: 18px;
+  margin-top: 40px;
 }
 
 .feature-card {
-  min-height: 210px;
-  padding: 22px;
+  min-height: 220px;
+  padding: 26px 22px 22px;
   transition:
-    transform 160ms ease,
-    border-color 160ms ease;
+    transform 200ms ease,
+    border-color 200ms ease,
+    border-radius 200ms ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-6px) rotate(-0.2deg);
   border-color: var(--line-strong);
+  border-radius: 26px 26px 10px 10px;
+}
+
+.feature-card:nth-child(2) {
+  transform: translateY(3rem);
+}
+
+.feature-card:nth-child(3) {
+  transform: translateY(-1rem);
 }
 
 .feature-card span {
   color: var(--accent);
-  font-weight: 900;
+  font-weight: 800;
+  font-family: "Sora", "IBM Plex Sans", sans-serif;
 }
 
 .page-head {
@@ -463,6 +517,53 @@ textarea:focus {
   font-weight: 800;
 }
 
+.editorial-band {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 22px;
+  margin-top: 46px;
+  align-items: start;
+}
+
+.editorial-copy,
+.route-list {
+  border: 1px solid var(--line);
+  border-radius: 24px 24px 12px 12px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: var(--shadow);
+}
+
+.editorial-copy {
+  position: relative;
+  overflow: hidden;
+}
+
+.editorial-copy::after {
+  content: "";
+  position: absolute;
+  right: -3rem;
+  bottom: -4rem;
+  width: 11rem;
+  height: 11rem;
+  border-radius: 32px;
+  background: rgba(217, 83, 79, 0.1);
+  transform: rotate(18deg);
+}
+
+.route-list ol,
+.step-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.route-list li,
+.step-list li {
+  margin-bottom: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .activity-toast-stack {
   position: fixed;
   right: 18px;
@@ -524,6 +625,7 @@ textarea:focus {
   .topbar,
   .layout,
   .hero,
+  .editorial-band,
   .grid,
   .form-grid {
     grid-template-columns: 1fr;
@@ -537,5 +639,11 @@ textarea:focus {
   .hero {
     min-height: auto;
     padding-top: 28px;
+  }
+
+  .hero-card,
+  .feature-card:nth-child(2),
+  .feature-card:nth-child(3) {
+    transform: none;
   }
 }
